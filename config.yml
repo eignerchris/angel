@@ -1,0 +1,8 @@
+admin_email: eignerchris@gmail.com
+time_to_scan: 23:59
+email_warnings: yes
+hash_type: sha1
+files:
+  - /home/eignerchris/.ssh/id_rsa
+  - /home/eignerchris/.ssh/id_rsa.pub
+  - /etc/ssh/sshd_config
