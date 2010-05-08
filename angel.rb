@@ -6,6 +6,7 @@ require 'dm-core'
 require 'dm-timestamps'
 require 'dm-validations'
 require 'yaml'
+require 'sha1'
 
 CONFIG_FILE = File.join(".angel.conf")
 CONFIG = YAML::load_file(CONFIG_FILE)
@@ -30,7 +31,7 @@ end
 
 module Notifier
 	def notify_admin(f)
-		%x(notify-send "#{f} has been tampered with")
+		puts "#{f} has been tampered with"
 	end
 end
 
@@ -45,6 +46,8 @@ class File
 end
 
 class App
+	include Notifier
+
 	def initialize
 		@action = ARGV[0]
 		run
@@ -63,28 +66,29 @@ class App
 		FileObj.create(:abs_path => f, :sha1 => sha1, :perms => perms)
 	end
 
-	def check_file_integrity(f)
-		fo = FileObj.all(:abs_path => f).first
-		fd = File.open(f)
-		sha = fd.sha1
-		perms = fd.perms
-		tampered_with?(fo, sha, perms)
-	end
-
-	def tampered_with?(fo, sha, perms)
-		fo.sha1 != sha or fo.perms != perms
+	def clean?(fo, fd)
+		(fo.sha1 == fd.sha1 and fo.perms != fd.perms) == true ? true : false
 	end
 
 	def fi_scan
 		CONFIG["files"].each do |f|
-			notify_admin if tampered_with?(f)
+			fo = FileObj.first(:abs_path => f)
+			fd = File.open(f)
+			notify_admin(f) if clean?(fo, fd)
 		end
+	end
+
+	def usage
+		puts "
+			-i, init		intializes database with hashes of files listed in .angel.conf
+			-s, scan		performs file integrity scan against sha1's in database
+		"
 	end
 
 	def run
 		case @action
 		when /init|-i/
-			intial_scan
+			initial_scan
 		when /scan|-s/
 			fi_scan
 		else
