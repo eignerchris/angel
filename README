@@ -11,6 +11,5 @@ chmod +x angel.rb to make your life easier...
 TODO:
 
 1. switch out puts for actual Logger warnings
-2. add support for recursively searching directories (adding individual files is annoying)
 3. add notification support -- twitter? email? something.
 4. rip various bits into separate files (no longer planning to daemonize)
