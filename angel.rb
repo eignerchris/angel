@@ -23,25 +23,33 @@ class FileObj
 	property :id, Serial
 	property :abs_path, String, :length => 500
 	property :sha1, String
-	property :perms, Integer
+	property :perms, String
 	property :created_at, DateTime
 
 	validates_is_unique :abs_path
 end
 
+DataMapper.auto_upgrade!
+
 module Notifier
-	def notify_admin(f)
-		puts "#{f} has been tampered with"
+	def warn(fo)
+		puts "#{fo.abs_path} is dirty!"
+	end
+
+	def notify_admin(fo)
+		# TODO: add notify options
+		# twitter for easy sms warning?
+		# mailer config?
 	end
 end
 
 class File
 	def sha1
-		SHA1.new(self.read.to_s)
+		SHA1.new(self.read.to_s).to_s
 	end
 
 	def perms
-		self.stat.mode
+		self.stat.mode.to_s
 	end
 end
 
@@ -66,22 +74,22 @@ class App
 		FileObj.create(:abs_path => f, :sha1 => sha1, :perms => perms)
 	end
 
-	def clean?(fo, fd)
-		(fo.sha1 == fd.sha1 and fo.perms != fd.perms) == true ? true : false
+	def dirty?(fo, fd)
+		(fo.sha1 == fd.sha1 and fo.perms == fd.perms) == false ? true : false
 	end
 
 	def fi_scan
 		CONFIG["files"].each do |f|
 			fo = FileObj.first(:abs_path => f)
 			fd = File.open(f)
-			notify_admin(f) if clean?(fo, fd)
+			warn(fo) if dirty?(fo, fd)
 		end
 	end
 
 	def usage
 		puts "
-			-i, init		intializes database with hashes of files listed in .angel.conf
-			-s, scan		performs file integrity scan against sha1's in database
+     -i, init		intializes database info about files listed in .angel.conf
+     -s, scan		performs file integrity scan against files in database
 		"
 	end
 
