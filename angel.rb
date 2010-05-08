@@ -1,20 +1,25 @@
 #!/usr/bin/ruby
 
 require 'rubygems'
-require 'bundler08'
 require 'dm-core'
 require 'dm-timestamps'
 require 'dm-validations'
 require 'yaml'
 require 'sha1'
 
-CONFIG_FILE = File.join(".angel.conf")
+CONFIG_FILE = File.join("#{ENV['HOME']}/.angel.conf")
 CONFIG = YAML::load_file(CONFIG_FILE)
 
-# can be local or external...
+# setup connection to mysql database.
+# can be local or external, preferably external.
 # DataMapper.setup(:external, 'mysql://user:password@39.120.32.11/db_name')
-DataMapper.setup(:default, "mysql://#{CONFIG['mysql_user']}:#{CONFIG['mysql_pass']}@localhost/angel")
-
+DataMapper.setup(:default, {
+    :adapter  => 'mysql',
+    :host     => 'localhost',
+    :username => CONFIG['mysql_user'],
+    :password => CONFIG['mysql_pass'],
+    :database => 'angel'
+  })
 
 class FileObj
   include DataMapper::Resource
@@ -62,11 +67,18 @@ class App
   end
 
   def initial_scan
+    entries = []
     CONFIG["files"].each do |f|
-      store_file_data(f)
+			if File.directory? f
+        Dir.chdir(f)
+        entries = Dir['**/*'].map! {|s| "#{Dir.pwd}/#{s}"}.reject { |e| File.directory? e }
+				entries.each { |f| store_file_data f }
+			else
+				store_file_data f
+			end
     end
   end
-	
+
   def store_file_data(f)
     fd = File.open(f) 
     sha1 = fd.sha1
@@ -79,9 +91,8 @@ class App
   end
 
   def fi_scan
-    CONFIG["files"].each do |f|
-      fo = FileObj.first(:abs_path => f)
-      fd = File.open(f)
+    FileObj.all.each do |fo|
+      fd = File.open(fo.abs_path)
       warn(fo) if dirty?(fo, fd)
     end
   end
@@ -93,9 +104,14 @@ class App
 		"
   end
 
+	def clear_db
+		FileObj.all.destroy
+	end
+
   def run
     case @action
     when /init|-i/
+			clear_db
       initial_scan
     when /scan|-s/
       fi_scan
