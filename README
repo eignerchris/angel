@@ -1,10 +1,11 @@
 angel is a simple, command line file integrity checker written in ruby
 
 seemed like a fun friday-night project
+chmod +x angel.rb to make your life easier...
 
 1. specify mysql username and pass in .angel.conf file.
 2. add absolute paths of files you'd like to have checked to .angel.conf.
-3. perform inital scan with ./angel.rb init
+3. perform initial scan with ./angel.rb init
 4. perform file integrity check using ./angel.rb scan whenever you get paranoid (perhaps in cron job?)
 
 TODO:
