@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 
 require 'rubygems'
-require 'do_mysql'
+require 'bundler08'
 require 'dm-core'
 require 'dm-timestamps'
 require 'dm-validations'
@@ -13,7 +13,7 @@ CONFIG = YAML::load_file(CONFIG_FILE)
 
 # can be local or external...
 # DataMapper.setup(:external, 'mysql://user:password@39.120.32.11/db_name')
-DataMapper.setup(:default, 'mysql://root:@localhost/angel')
+DataMapper.setup(:default, "mysql://#{CONFIG['mysql_user']}:#{CONFIG['mysql_pass']}@localhost/angel")
 
 
 class FileObj
@@ -99,6 +99,8 @@ class App
 			initial_scan
 		when /scan|-s/
 			fi_scan
+		when /help|-h/
+			usage
 		else
 			usage
 		end
