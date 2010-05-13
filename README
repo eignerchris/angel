@@ -19,7 +19,6 @@ chmod +x angel.rb to make your life easier...
 3. perform initial scan with './angel.rb init'
 done!
 
-
 perform file integrity check at any time using './angel.rb scan' (perhaps in cron job?)
 optionally redirect stdout to file for logging purposes, e.g. './angel.rb scan > angel.log' 
 
