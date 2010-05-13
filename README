@@ -1,15 +1,29 @@
 angel is a simple, command line file integrity checker written in ruby
-
 seemed like a fun friday-night project
+
+dependent on:
+dm-core
+dm-validations
+dm-timestamps
+
+sudo gem install dm-core
+ "    "     "    dm-validations
+ "    "     "    dm-timestamps
+
+
 chmod +x angel.rb to make your life easier...
 
-1. specify mysql username and pass in .angel.conf file.
-2. add absolute paths of files or dirs you'd like to have checked to .angel.conf.
-3. perform initial scan with ./angel.rb init
-4. perform file integrity check using ./angel.rb scan whenever you get paranoid (perhaps in cron job?)
+1. create mysql db named 'angel'
+2. create and fill in ~/.angel.conf file. see included example conf file.
+2. add absolute paths of files or dirs you'd like to have checked to .angel.conf. angel will recursively check all files in a dir
+3. perform initial scan with './angel.rb init'
+done!
+
+
+perform file integrity check at any time using './angel.rb scan' (perhaps in cron job?)
+optionally redirect stdout to file for logging purposes, e.g. './angel.rb scan > angel.log' 
 
 TODO:
-
 1. switch out puts for actual Logger warnings
 3. add notification support -- twitter? email? something.
 4. rip various bits into separate files (no longer planning to daemonize)

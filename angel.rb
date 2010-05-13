@@ -19,7 +19,7 @@ DataMapper.setup(:default, {
     :username => CONFIG['mysql_user'],
     :password => CONFIG['mysql_pass'],
     :database => 'angel'
-  })
+})
 
 class FileObj
   include DataMapper::Resource
@@ -37,8 +37,13 @@ end
 DataMapper.auto_upgrade!
 
 module Notifier
-  def warn(fo)
-    puts "#{fo.abs_path} is dirty!"
+
+  def clean
+    print "[\e[32mCLEAN\e[0m]"
+  end
+
+  def warn
+    print "[\e[31mWARNING\e[0m]"
   end
 
   def notify_admin(fo)
@@ -83,7 +88,8 @@ class App
     fd = File.open(f) 
     sha1 = fd.sha1
     perms = fd.stat.mode
-    FileObj.create(:abs_path => f, :sha1 => sha1, :perms => perms)
+    fo = FileObj.create(:abs_path => f, :sha1 => sha1, :perms => perms)
+		puts "added #{fo.abs_path}"
   end
 
   def dirty?(fo, fd)
@@ -93,7 +99,8 @@ class App
   def fi_scan
     FileObj.all.each do |fo|
       fd = File.open(fo.abs_path)
-      warn(fo) if dirty?(fo, fd)
+      dirty?(fo, fd) ? warn : clean
+      puts fo.abs_path
     end
   end
 
