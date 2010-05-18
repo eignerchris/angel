@@ -1,67 +1,11 @@
 #!/usr/bin/ruby
 
 require 'rubygems'
-require 'dm-core'
-require 'dm-timestamps'
-require 'dm-validations'
 require 'yaml'
-require 'sha1'
-
-CONFIG_FILE = File.join("#{ENV['HOME']}/.angel.conf")
-CONFIG = YAML::load_file(CONFIG_FILE)
-
-# setup connection to mysql database.
-# can be local or external, preferably external.
-# DataMapper.setup(:external, 'mysql://user:password@39.120.32.11/db_name')
-DataMapper.setup(:default, {
-    :adapter  => 'mysql',
-    :host     => 'localhost',
-    :username => CONFIG['mysql_user'],
-    :password => CONFIG['mysql_pass'],
-    :database => 'angel'
-})
-
-class FileObj
-  include DataMapper::Resource
-  include DataMapper::Timestamps
-
-  property :id, Serial
-  property :abs_path, String, :length => 500
-  property :sha1, String
-  property :perms, String
-  property :created_at, DateTime
-
-  validates_is_unique :abs_path
-end
-
-DataMapper.auto_upgrade!
-
-module Notifier
-
-  def clean
-    print "[\e[32mCLEAN\e[0m]"
-  end
-
-  def warn
-    print "[\e[31mWARNING\e[0m]"
-  end
-
-  def notify_admin(fo)
-    # TODO: add notify options
-    # twitter for easy sms warning?
-    # mailer config?
-  end
-end
-
-class File
-  def sha1
-    SHA1.new(self.read.to_s).to_s
-  end
-
-  def perms
-    self.stat.mode.to_s
-  end
-end
+require 'file_obj'
+require 'file'
+require 'notifier'
+require 'env'
 
 class App
   include Notifier
@@ -71,12 +15,13 @@ class App
     run
   end
 
+	# initial scan populates db with sha1 and perms of all files listed in ~/.angel.conf
   def initial_scan
     entries = []
     CONFIG["files"].each do |f|
 			if File.directory? f
         Dir.chdir(f)
-        entries = Dir['**/*'].map! {|s| "#{Dir.pwd}/#{s}"}.reject { |e| File.directory? e }
+        entries = Dir['**/*'].map! {|s| "#{Dir.pwd}/#{s}"}.reject { |e| File.directory? e }					# recursively collects all files in a directory
 				entries.each { |f| store_file_data f }
 			else
 				store_file_data f
@@ -92,10 +37,12 @@ class App
 		puts "added #{fo.abs_path}"
   end
 
+	# checks if file has been tampered with
   def dirty?(fo, fd)
     (fo.sha1 == fd.sha1 and fo.perms == fd.perms) == false ? true : false
   end
 
+	# file integrity scan compares sha's and perms of each file in ~/.angel.conf with those in database; reports any dirty files.
   def fi_scan
     FileObj.all.each do |fo|
       fd = File.open(fo.abs_path)
@@ -106,7 +53,7 @@ class App
 
   def usage
     puts "
-     -i, init		intializes database info about files listed in .angel.conf
+     -i, init		populates database with sha1 and perms of files listed in ~/.angel.conf
      -s, scan		performs file integrity scan against files in database
 		"
   end
