@@ -1,3 +1,7 @@
+require 'dm-core'
+require 'dm-timestamps'
+require 'dm-validations'
+
 CONFIG_FILE = File.join("#{ENV['HOME']}/.angel.conf")
 CONFIG = YAML::load_file(CONFIG_FILE)
 
