@@ -1,8 +1,23 @@
+# mysql db settings
 mysql_user: root
 mysql_pass: 
+
+# notifcation settings; note: must provide smtp config details below
+notify_admin: yes
+admin_to_email: EMAIL_ADDRESS_HERE
+
+# smtp notifier settings
+# sample gmail smtp settings
+# smtp_server: smtp.gmail.com
+# smtp_port: 587
+# smtp_user: FULL_GMAIL_ADDRESS
+# smtp_pass: GMAIL_PASSWD
+# smtp_auth_type: plain
+
+# files to be scanned
 files:
-  - /home/eignerchris/.ssh/id_rsa
-  - /home/eignerchris/.ssh/id_rsa.pub
+  - /home/HOME_DIR/.ssh/id_rsa
+  - /home/HOME_DIR/.ssh/id_rsa.pub
   - /etc/ssh/sshd_config
   - /usr/bin/ssh
-  - /home/eignerchris/Development/
+# etc.

@@ -9,8 +9,15 @@ module Notifier
   end
 
   def notify_admin(fo)
-    # TODO: add notify options
-    # twitter for easy sms warning?
-    # mailer config?
+		begin
+		  Pony.mail(
+						:to => CONFIG['admin_to_email'],
+						:via => :smtp,
+						:via_options => SMTP_CONFIG,
+						:subject => 'WARNING!',
+		        :body => "#{fo.abs_path} is dirty!")
+		rescue Exception => e
+			puts e.inspect
+		end 
   end
 end

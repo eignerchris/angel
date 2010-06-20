@@ -12,6 +12,6 @@ class FileObj
   property :perms, String
   property :created_at, DateTime
 
-  validates_is_unique :abs_path
+  validates_uniqueness_of :abs_path
 end
 

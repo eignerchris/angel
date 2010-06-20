@@ -5,7 +5,7 @@ module Scanner
     CONFIG["files"].each do |f|
 			if File.directory? f
         Dir.chdir(f)
-        entries = Dir['**/*'].map! {|s| "#{Dir.pwd}/#{s}"}.reject { |e| File.directory? e }					# recursively collects all files in a directory
+        entries = Dir['**/*'].map! {|s| "#{Dir.pwd}/#{s}"}.reject { |e| File.directory? e }		# recursively collects all files in a directory
 				entries.each { |f| store_file_data f }
 			else
 				store_file_data f
@@ -26,11 +26,18 @@ module Scanner
     (fo.sha1 == fd.sha1 and fo.perms == fd.perms) == false ? true : false
   end
 
-	# file integrity scan compares sha's and perms of each file in ~/.angel.conf with those in database; reports any dirty files.
+	# compares sha's and perms of each file in ~/.angel.conf with those in database
+	# TODO has potentional to spam admin if a lot of files end up dirty.
+	# needs batching; e.g. construct single email to be sent from all dirty files. 
   def fi_scan
     FileObj.all.each do |fo|
       fd = File.open(fo.abs_path)
-      dirty?(fo, fd) ? warn : clean
+      if dirty?(fo, fd)
+				warn
+				notify_admin fo if CONFIG['notify_admin']
+			else
+				clean
+			end
       puts fo.abs_path
     end
   end

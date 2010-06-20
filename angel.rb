@@ -1,13 +1,6 @@
 #!/usr/bin/ruby
 
-require 'rubygems'
-require 'yaml'
 require 'env'
-
-cwd = File.expand_path(File.join(File.dirname(__FILE__)))
-['lib', 'ext'].each do |d|
-	Dir.glob(File.join(cwd, d, '*.rb')).each { |f| require f }
-end
 
 class App
   include Notifier
