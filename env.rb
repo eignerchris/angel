@@ -14,7 +14,7 @@ cwd = File.expand_path(File.join(File.dirname(__FILE__)))
 end
 
 # load yaml config file from home dir
-CONFIG_FILE = File.join("#{ENV['HOME']}/.angel.conf")
+CONFIG_FILE = File.join(ENV['HOME'], ".angel.conf")
 CONFIG = YAML::load_file(CONFIG_FILE)
 
 # setup connection to mysql database named 'angel'.
